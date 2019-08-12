@@ -1,7 +1,7 @@
 AWSTemplateFormatVersion: 2010-09-09
 Transform: AWS::Serverless-2016-10-31
 Resources:
-  VirtualNetwork:
+  sharedVPC:
     Type: AWS::EC2::VPC
     Properties:
       CidrBlock: 10.0.0.0/16
@@ -9,9 +9,9 @@ Resources:
         - Key: Name
           Value: !Sub
             - Stack ${StackTagName} Environment ${EnvironmentTagName} Virtual Network ${ResourceName}
-            - ResourceName: VirtualNetwork
-    Condition: VirtualNetworkCreateNewResource
-  VirtualNetworkPrivateSubnet1:
+            - ResourceName: sharedVPC
+    Condition: sharedVPCCreateNewResource
+  sharedVPCPrivateSubnet1:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::Subnet
@@ -29,10 +29,10 @@ Resources:
         - Key: Name
           Value: !Sub
             - Stack ${StackTagName} Environment ${EnvironmentTagName} Virtual Network ${ResourceName} Private Subnet 1
-            - ResourceName: VirtualNetwork
-      VpcId: !Ref VirtualNetwork
-    Condition: VirtualNetworkCreateNewResource
-  VirtualNetworkPrivateSubnet2:
+            - ResourceName: sharedVPC
+      VpcId: !Ref sharedVPC
+    Condition: sharedVPCCreateNewResource
+  sharedVPCPrivateSubnet2:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::Subnet
@@ -50,10 +50,10 @@ Resources:
         - Key: Name
           Value: !Sub
             - Stack ${StackTagName} Environment ${EnvironmentTagName} Virtual Network ${ResourceName} Private Subnet 2
-            - ResourceName: VirtualNetwork
-      VpcId: !Ref VirtualNetwork
-    Condition: VirtualNetworkCreateNewResource
-  VirtualNetworkPublicSubnet1:
+            - ResourceName: sharedVPC
+      VpcId: !Ref sharedVPC
+    Condition: sharedVPCCreateNewResource
+  sharedVPCPublicSubnet1:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::Subnet
@@ -72,10 +72,10 @@ Resources:
         - Key: Name
           Value: !Sub
             - Stack ${StackTagName} Environment ${EnvironmentTagName} Virtual Network ${ResourceName} Public Subnet 1
-            - ResourceName: VirtualNetwork
-      VpcId: !Ref VirtualNetwork
-    Condition: VirtualNetworkCreateNewResource
-  VirtualNetworkPublicSubnet2:
+            - ResourceName: sharedVPC
+      VpcId: !Ref sharedVPC
+    Condition: sharedVPCCreateNewResource
+  sharedVPCPublicSubnet2:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::Subnet
@@ -94,25 +94,25 @@ Resources:
         - Key: Name
           Value: !Sub
             - Stack ${StackTagName} Environment ${EnvironmentTagName} Virtual Network ${ResourceName} Public Subnet 2
-            - ResourceName: VirtualNetwork
-      VpcId: !Ref VirtualNetwork
-    Condition: VirtualNetworkCreateNewResource
-  VirtualNetworkPrivateSubnet1NatGatewayEIP:
+            - ResourceName: sharedVPC
+      VpcId: !Ref sharedVPC
+    Condition: sharedVPCCreateNewResource
+  sharedVPCPrivateSubnet1NatGatewayEIP:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::EIP
     Properties:
       Domain: vpc
-    Condition: VirtualNetworkCreateNewResource
-  VirtualNetworkPrivateSubnet1NatGateway:
+    Condition: sharedVPCCreateNewResource
+  sharedVPCPrivateSubnet1NatGateway:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::NatGateway
     Properties:
-      AllocationId: !GetAtt VirtualNetworkPrivateSubnet1NatGatewayEIP.AllocationId
-      SubnetId: !Ref VirtualNetworkPublicSubnet1
-    Condition: VirtualNetworkCreateNewResource
-  VirtualNetworkPrivateSubnet1RouteTable:
+      AllocationId: !GetAtt sharedVPCPrivateSubnet1NatGatewayEIP.AllocationId
+      SubnetId: !Ref sharedVPCPublicSubnet1
+    Condition: sharedVPCCreateNewResource
+  sharedVPCPrivateSubnet1RouteTable:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::RouteTable
@@ -121,42 +121,42 @@ Resources:
         - Key: Name
           Value: !Sub
             - Stack ${StackTagName} Environment ${EnvironmentTagName} Virtual Network ${ResourceName} Private Subnet 1 Route Table
-            - ResourceName: VirtualNetwork
-      VpcId: !Ref VirtualNetwork
-    Condition: VirtualNetworkCreateNewResource
-  VirtualNetworkPrivateSubnet1NatGatewayRoute:
+            - ResourceName: sharedVPC
+      VpcId: !Ref sharedVPC
+    Condition: sharedVPCCreateNewResource
+  sharedVPCPrivateSubnet1NatGatewayRoute:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::Route
     Properties:
       DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref VirtualNetworkPrivateSubnet1NatGateway
-      RouteTableId: !Ref VirtualNetworkPrivateSubnet1RouteTable
-    Condition: VirtualNetworkCreateNewResource
-  VirtualNetworkPrivateSubnet1RouteTableAssociation:
+      NatGatewayId: !Ref sharedVPCPrivateSubnet1NatGateway
+      RouteTableId: !Ref sharedVPCPrivateSubnet1RouteTable
+    Condition: sharedVPCCreateNewResource
+  sharedVPCPrivateSubnet1RouteTableAssociation:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref VirtualNetworkPrivateSubnet1RouteTable
-      SubnetId: !Ref VirtualNetworkPrivateSubnet1
-    Condition: VirtualNetworkCreateNewResource
-  VirtualNetworkPrivateSubnet2NatGatewayEIP:
+      RouteTableId: !Ref sharedVPCPrivateSubnet1RouteTable
+      SubnetId: !Ref sharedVPCPrivateSubnet1
+    Condition: sharedVPCCreateNewResource
+  sharedVPCPrivateSubnet2NatGatewayEIP:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::EIP
     Properties:
       Domain: vpc
-    Condition: VirtualNetworkCreateNewResource
-  VirtualNetworkPrivateSubnet2NatGateway:
+    Condition: sharedVPCCreateNewResource
+  sharedVPCPrivateSubnet2NatGateway:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::NatGateway
     Properties:
-      AllocationId: !GetAtt VirtualNetworkPrivateSubnet2NatGatewayEIP.AllocationId
-      SubnetId: !Ref VirtualNetworkPublicSubnet2
-    Condition: VirtualNetworkCreateNewResource
-  VirtualNetworkPrivateSubnet2RouteTable:
+      AllocationId: !GetAtt sharedVPCPrivateSubnet2NatGatewayEIP.AllocationId
+      SubnetId: !Ref sharedVPCPublicSubnet2
+    Condition: sharedVPCCreateNewResource
+  sharedVPCPrivateSubnet2RouteTable:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::RouteTable
@@ -165,27 +165,27 @@ Resources:
         - Key: Name
           Value: !Sub
             - Stack ${StackTagName} Environment ${EnvironmentTagName} Virtual Network ${ResourceName} Private Subnet 2 Route Table
-            - ResourceName: VirtualNetwork
-      VpcId: !Ref VirtualNetwork
-    Condition: VirtualNetworkCreateNewResource
-  VirtualNetworkPrivateSubnet2NatGatewayRoute:
+            - ResourceName: sharedVPC
+      VpcId: !Ref sharedVPC
+    Condition: sharedVPCCreateNewResource
+  sharedVPCPrivateSubnet2NatGatewayRoute:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::Route
     Properties:
       DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref VirtualNetworkPrivateSubnet2NatGateway
-      RouteTableId: !Ref VirtualNetworkPrivateSubnet2RouteTable
-    Condition: VirtualNetworkCreateNewResource
-  VirtualNetworkPrivateSubnet2RouteTableAssociation:
+      NatGatewayId: !Ref sharedVPCPrivateSubnet2NatGateway
+      RouteTableId: !Ref sharedVPCPrivateSubnet2RouteTable
+    Condition: sharedVPCCreateNewResource
+  sharedVPCPrivateSubnet2RouteTableAssociation:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref VirtualNetworkPrivateSubnet2RouteTable
-      SubnetId: !Ref VirtualNetworkPrivateSubnet2
-    Condition: VirtualNetworkCreateNewResource
-  VirtualNetworkPublicSubnetsInternetGateway:
+      RouteTableId: !Ref sharedVPCPrivateSubnet2RouteTable
+      SubnetId: !Ref sharedVPCPrivateSubnet2
+    Condition: sharedVPCCreateNewResource
+  sharedVPCPublicSubnetsInternetGateway:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::InternetGateway
@@ -194,17 +194,17 @@ Resources:
         - Key: Name
           Value: !Sub
             - Stack ${StackTagName} Environment ${EnvironmentTagName} Virtual Network ${ResourceName} Public Subnets Internet Gateway
-            - ResourceName: VirtualNetwork
-    Condition: VirtualNetworkCreateNewResource
-  VirtualNetworkPublicSubnetsInternetGatewayAttachment:
+            - ResourceName: sharedVPC
+    Condition: sharedVPCCreateNewResource
+  sharedVPCPublicSubnetsInternetGatewayAttachment:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
-      InternetGatewayId: !Ref VirtualNetworkPublicSubnetsInternetGateway
-      VpcId: !Ref VirtualNetwork
-    Condition: VirtualNetworkCreateNewResource
-  VirtualNetworkPublicSubnetsRouteTable:
+      InternetGatewayId: !Ref sharedVPCPublicSubnetsInternetGateway
+      VpcId: !Ref sharedVPC
+    Condition: sharedVPCCreateNewResource
+  sharedVPCPublicSubnetsRouteTable:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::RouteTable
@@ -213,39 +213,46 @@ Resources:
         - Key: Name
           Value: !Sub
             - Stack ${StackTagName} Environment ${EnvironmentTagName} Virtual Network ${ResourceName} Public Subnets Route Table
-            - ResourceName: VirtualNetwork
-      VpcId: !Ref VirtualNetwork
-    Condition: VirtualNetworkCreateNewResource
-  VirtualNetworkPublicSubnetsInternetGatewayRoute:
+            - ResourceName: sharedVPC
+      VpcId: !Ref sharedVPC
+    Condition: sharedVPCCreateNewResource
+  sharedVPCPublicSubnetsInternetGatewayRoute:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::Route
     Properties:
       DestinationCidrBlock: 0.0.0.0/0
-      GatewayId: !Ref VirtualNetworkPublicSubnetsInternetGateway
-      RouteTableId: !Ref VirtualNetworkPublicSubnetsRouteTable
-    Condition: VirtualNetworkCreateNewResource
-  VirtualNetworkPublicSubnet1RouteTableAssociation:
+      GatewayId: !Ref sharedVPCPublicSubnetsInternetGateway
+      RouteTableId: !Ref sharedVPCPublicSubnetsRouteTable
+    Condition: sharedVPCCreateNewResource
+  sharedVPCPublicSubnet1RouteTableAssociation:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref VirtualNetworkPublicSubnetsRouteTable
-      SubnetId: !Ref VirtualNetworkPublicSubnet1
-    Condition: VirtualNetworkCreateNewResource
-  VirtualNetworkPublicSubnet2RouteTableAssociation:
+      RouteTableId: !Ref sharedVPCPublicSubnetsRouteTable
+      SubnetId: !Ref sharedVPCPublicSubnet1
+    Condition: sharedVPCCreateNewResource
+  sharedVPCPublicSubnet2RouteTableAssociation:
     Metadata:
       StackeryManaged: true
     Type: AWS::EC2::SubnetRouteTableAssociation
     Properties:
-      RouteTableId: !Ref VirtualNetworkPublicSubnetsRouteTable
-      SubnetId: !Ref VirtualNetworkPublicSubnet2
-    Condition: VirtualNetworkCreateNewResource
-  Database:
+      RouteTableId: !Ref sharedVPCPublicSubnetsRouteTable
+      SubnetId: !Ref sharedVPCPublicSubnet2
+    Condition: sharedVPCCreateNewResource
+  sharedVPCExistingResource:
+    Type: Custom::StackeryExistingResource
+    Properties:
+      ServiceToken: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:stackery-agent-commander
+      Type: virtualNetwork
+      Data: !Ref EnvConfigVPCCONFIGAsString
+    Condition: sharedVPCUseExistingResource
+  sharedRDS:
     Type: AWS::RDS::DBCluster
     Properties:
       BackupRetentionPeriod: 1
-      DBSubnetGroupName: !Ref DatabaseSubnetGroup
+      DBSubnetGroupName: !Ref sharedRDSSubnetGroup
       Engine: aurora
       EngineMode: serverless
       MasterUsername: root
@@ -256,30 +263,37 @@ Resources:
         MaxCapacity: 256
       StorageEncrypted: true
       VpcSecurityGroupIds:
-        - !Ref DatabaseSecurityGroup
-    Condition: DatabaseCreateNewResource
-  DatabaseSubnetGroup:
+        - !Ref sharedRDSSecurityGroup
+    Condition: sharedRDSCreateNewResource
+  sharedRDSExistingResource:
+    Type: Custom::StackeryExistingResource
+    Properties:
+      ServiceToken: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:stackery-agent-commander
+      Type: database
+      Data: !Ref EnvConfigDBARNAsString
+    Condition: sharedRDSUseExistingResource
+  sharedRDSSubnetGroup:
     Type: AWS::RDS::DBSubnetGroup
     Properties:
       DBSubnetGroupDescription: !Sub
         - Stack ${StackTagName} Environment ${EnvironmentTagName} Database ${ResourceName} VPC Subnets
-        - ResourceName: Database
+        - ResourceName: sharedRDS
       SubnetIds:
         - !If
-          - VirtualNetworkUseExistingResource
-          - !GetAtt VirtualNetworkExistingResource.PrivateSubnet1
-          - !Ref VirtualNetworkPrivateSubnet1
+          - sharedVPCUseExistingResource
+          - !GetAtt sharedVPCExistingResource.PrivateSubnet1
+          - !Ref sharedVPCPrivateSubnet1
         - !If
-          - VirtualNetworkUseExistingResource
-          - !GetAtt VirtualNetworkExistingResource.PrivateSubnet2
-          - !Ref VirtualNetworkPrivateSubnet2
+          - sharedVPCUseExistingResource
+          - !GetAtt sharedVPCExistingResource.PrivateSubnet2
+          - !Ref sharedVPCPrivateSubnet2
       Tags:
         - Key: Name
           Value: !Sub
             - Stack ${StackTagName} Environment ${EnvironmentTagName} Database ${ResourceName} VPC Subnets
-            - ResourceName: Database
-    Condition: DatabaseCreateNewResource
-  DatabaseSecurityGroup:
+            - ResourceName: sharedRDS
+    Condition: sharedRDSCreateNewResource
+  sharedRDSSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Database Security Group
@@ -292,26 +306,12 @@ Resources:
         - Key: Name
           Value: !Sub
             - Stack ${StackTagName} Environment ${EnvironmentTagName} Database ${ResourceName} VPC Security Group
-            - ResourceName: Database
+            - ResourceName: sharedRDS
       VpcId: !If
-        - VirtualNetworkUseExistingResource
-        - !Ref VirtualNetworkExistingResource
-        - !Ref VirtualNetwork
-    Condition: DatabaseCreateNewResource
-  VirtualNetworkExistingResource:
-    Type: Custom::StackeryExistingResource
-    Properties:
-      ServiceToken: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:stackery-agent-commander
-      Type: virtualNetwork
-      Data: !Ref EnvConfigVPCCONFIGAsString
-    Condition: VirtualNetworkUseExistingResource
-  DatabaseExistingResource:
-    Type: Custom::StackeryExistingResource
-    Properties:
-      ServiceToken: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:stackery-agent-commander
-      Type: database
-      Data: !Ref EnvConfigDBARNAsString
-    Condition: DatabaseUseExistingResource
+        - sharedVPCUseExistingResource
+        - !Ref sharedVPCExistingResource
+        - !Ref sharedVPC
+    Condition: sharedRDSCreateNewResource
 Parameters:
   StackTagName:
     Type: String
@@ -329,16 +329,16 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /<EnvironmentName>/DB_ARN
 Conditions:
-  VirtualNetworkCreateNewResource: !Equals
+  sharedVPCCreateNewResource: !Equals
     - 'false'
     - !Ref EnvConfigVPCCONFIGAsString
-  VirtualNetworkUseExistingResource: !Not
-    - Condition: VirtualNetworkCreateNewResource
-  DatabaseCreateNewResource: !Equals
+  sharedVPCUseExistingResource: !Not
+    - Condition: sharedVPCCreateNewResource
+  sharedRDSUseExistingResource: !Not
+    - Condition: sharedRDSCreateNewResource
+  sharedRDSCreateNewResource: !Equals
     - 'false'
     - !Ref EnvConfigDBARNAsString
-  DatabaseUseExistingResource: !Not
-    - Condition: DatabaseCreateNewResource
 Metadata:
   EnvConfigParameters:
     EnvConfigVPCCONFIGAsString: VPC_CONFIG
