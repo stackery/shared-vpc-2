@@ -312,6 +312,64 @@ Resources:
         - !Ref sharedVPCExistingResource
         - !Ref sharedVPC
     Condition: sharedRDSCreateNewResource
+  Topic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub ${AWS::StackName}-Topic
+  newFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-newFunction
+      Description: !Sub
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
+        - ResourceName: newFunction
+      CodeUri: src/newFunction
+      Handler: index.handler
+      Runtime: nodejs10.x
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+        - AWSXrayWriteOnlyAccess
+        - AWSLambdaENIManagementAccess
+      VpcConfig:
+        SecurityGroupIds:
+          - !If
+            - sharedVPCUseExistingResource
+            - !GetAtt sharedVPCExistingResource.DefaultSecurityGroup
+            - !GetAtt sharedVPC.DefaultSecurityGroup
+        SubnetIds:
+          - !If
+            - sharedVPCUseExistingResource
+            - !GetAtt sharedVPCExistingResource.PrivateSubnet1
+            - !Ref sharedVPCPrivateSubnet1
+          - !If
+            - sharedVPCUseExistingResource
+            - !GetAtt sharedVPCExistingResource.PrivateSubnet2
+            - !Ref sharedVPCPrivateSubnet2
+      Environment:
+        Variables:
+          DB_ID: !If
+            - sharedRDSUseExistingResource
+            - !Ref sharedRDSExistingResource
+            - !Ref sharedRDS
+          DB_ADDRESS: !If
+            - sharedRDSUseExistingResource
+            - !GetAtt sharedRDSExistingResource.Endpoint.Address
+            - !GetAtt sharedRDS.Endpoint.Address
+          DB_PORT: !If
+            - sharedRDSUseExistingResource
+            - !GetAtt sharedRDSExistingResource.Endpoint.Port
+            - !GetAtt sharedRDS.Endpoint.Port
+          DB_ARN: !If
+            - sharedRDSUseExistingResource
+            - !Sub arn:aws:rds:${AWS::Region}:${AWS::AccountId}:cluster:${sharedRDSExistingResource}
+            - !Sub arn:aws:rds:${AWS::Region}:${AWS::AccountId}:cluster:${sharedRDS}
+      Events:
+        Topic:
+          Type: SNS
+          Properties:
+            Topic: !Ref Topic
 Parameters:
   StackTagName:
     Type: String
